@@ -59,44 +59,46 @@ for storm_season in range(2000,2004):
 
     storm_dict[storm_season] = storm_names
 
-# %% [markdown]
-# #### Select point features corresponding to a specific storm (season & name)
-
-# %%
-#Select points for a given storm
-arcpy.analysis.Select(
-    in_features=ibtracs_NA_points, 
-    out_feature_class=storm_track_points, 
-    where_clause=f"SEASON = {storm_season} And NAME = '{storm_name}'"
-)
-
-# %% [markdown]
-# #### Connect Points to a Track line
-
-# %%
-#Connect point to a track line
-arcpy.management.PointsToLine(
-    Input_Features=storm_track_points,
-    Output_Feature_Class=storm_track_line,
-    Sort_Field='ISO_TIME'
-)
-
-# %% [markdown]
-# #### Select Counties Intersecting Point
-
-# %%
-#Select intersecting counties
-select_output = arcpy.management.SelectLayerByLocation(
-    in_layer=usa_counties, 
-    overlap_type="INTERSECT", 
-    select_features=storm_track_line, 
-    )
-select_result = select_output.getOutput(0)
-
 #%%
 
-#Count the counites
-county_count = int(arcpy.GetCount_management(select_result).getOutput(0))
+# Iterate thorugh
+for storm_season in storm_dict.keys():
+    #get list of storms
+    storm_names = storm_dict[storm_season]
+    
+    for storm_name in storm_names:
+
+        storm_count = 0
+
+        #Select points for a given storm
+        arcpy.analysis.Select(
+            in_features=ibtracs_NA_points, 
+            out_feature_class=storm_track_points, 
+            where_clause=f"SEASON = {storm_season} And NAME = '{storm_name}'"
+        )
+
+        #Connect point to a track line
+        arcpy.management.PointsToLine(
+            Input_Features=storm_track_points,
+            Output_Feature_Class=storm_track_line,
+            Sort_Field='ISO_TIME'
+        )
+
+        #Select intersecting counties
+        select_output = arcpy.management.SelectLayerByLocation(
+            in_layer=usa_counties, 
+            overlap_type="INTERSECT", 
+            select_features=storm_track_line, 
+            )
+        select_result = select_output.getOutput(0)
+
+        #Count the counties
+        county_count = int(arcpy.GetCount_management(select_result).getOutput(0))
+
+        # Inc storm counter
+        storm_count += county_count
+
+        print(storm_season, county_count, storm_count)
 
 
 # %%

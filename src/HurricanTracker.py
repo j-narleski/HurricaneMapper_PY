@@ -30,6 +30,16 @@ usa_counties = 'https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/service
 storm_track_points =  "memory\\track_points"
 storm_track_line = "memory\\Tracklines"
 
+#%%
+# Create list of storms
+cursor = arcpy.da.SearchCursor(
+    in_table = ibtracs_NA_points,
+    where_clause='SEASON = 2000',
+    field_names=['NAME']
+)
+
+del cursor
+
 # %% [markdown]
 # #### Select point features corresponding to a specific storm (season & name)
 
@@ -64,11 +74,10 @@ select_output = arcpy.management.SelectLayerByLocation(
     )
 select_result = select_output.getOutput(0)
 
+#%%
+
+#Count the counites
+county_count = int(arcpy.GetCount_management(select_result).getOutput(0))
+
+
 # %%
-#Copy selected counties to output feature class
-arcpy.management.CopyFeatures(
-    in_features = select_result, 
-    out_feature_class = str(affected_counties)
-)
-
-
